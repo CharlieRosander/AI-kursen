@@ -33,6 +33,11 @@ def enter_record():
   phonebook.add(json_data["entry"])
   return "Added to the phonebook", 201
 
+@app.route("/phonebook/delete/<name>", methods=["DELETE"])
+def delete_record(name):
+  phonebook.delete_entry(name)
+  return f"Deleted {name} from the phonebook", 200
+
 # Function to GET the phonebook by number of rows (1-100) and return the results
 @app.route("/phonebook/<num_of_rows>")
 def get_phonebook_rows(num_of_rows):

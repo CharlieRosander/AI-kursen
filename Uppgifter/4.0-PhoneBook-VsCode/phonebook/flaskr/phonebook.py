@@ -51,7 +51,14 @@ class Phonebook:
       return "Only 1 to 100 rows are allowed"
     else:
       return df.head(int(rows)).to_json(orient="records")
+  
 
+  def delete_entry(self, name):
+      df = self.get_data()
+      df = df[df["name"] != name]
+      self.data = df
+      self.sql.write_to("phonebook", self.data)
+      return df
 
   def add(self, entry):
     self.write_to(entry)
