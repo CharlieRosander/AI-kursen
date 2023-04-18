@@ -32,16 +32,26 @@ class Phonebook:
     self.sql.write_to("phonebook", self.data)
 
   def get_all(self):
-    return self.get_data().to_json(orient="records")
+    get_all_data = self.get_data()
+    return self.get_data().to_json(orient="records"), get_all_data
 
   def get_by_name(self, name):
     df = self.get_data()
     return df[df["name"].str.contains(name)].to_json(orient="records")
 
+  def get_by_address(self, address):
+    df = self.get_data()
+    return df[df["address"].str.contains(address)].to_json(orient="records")
+  
+  # Function with a conditional statement to check if the number of rows is between 1 and 100
+  # If not, return an error message, else return the number of rows requested
   def get_rows(self, rows):
     df = self.get_data()
-    #logic for slicing up to 100 rows
-    return #the data
+    if int(rows) < 1 or int(rows) > 100:
+      return "Only 1 to 100 rows are allowed"
+    else:
+      return df.head(int(rows)).to_json(orient="records")
+
 
   def add(self, entry):
     self.write_to(entry)
