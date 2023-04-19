@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set VIRTUAL_ENV=C:\Users\charl\Desktop\AI-Developer-Jensen\Tillämpad AI, datautvinning, machine-learning, deeplearning\AI-kursen\Uppgifter\ETL-continued\venv
+set VIRTUAL_ENV=C:\Users\charl\Desktop\AI-Developer-Jensen\AI-kursen\Uppgifter\3.0-AttendanceETL-VsCode\venv
 
 if not defined PROMPT set PROMPT=$P$G
 

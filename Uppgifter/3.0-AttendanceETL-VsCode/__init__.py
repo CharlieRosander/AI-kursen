@@ -61,9 +61,20 @@ class ETLData:
         # Combines all data into a combined single csv file
         data_df.to_csv("combined_data.csv", index=False)
 
+    # combine data of all students that have < 60 attendance from the "late" column
+    # and save the combined data to a CSV file
+    @staticmethod
+    def combine_attendance(data_df):
+        late_data = data_df.loc[data_df["late"] < 60].copy()
+        output_filename = "absence_june.csv"
+        output_filepath = os.path.join(CURR_DIR_PATH, output_filename)
+        late_data.sort_values(by=["late"], ascending=False, inplace=True)
+        late_data.to_csv(output_filepath, index=False)
+
 
 if __name__ == "__main__":
     etl = ETLData()
     etl.extract_files()
     etl_transformed = etl.transform_data()
     etl.load_data(etl_transformed)
+    etl.combine_attendance(etl_transformed)
