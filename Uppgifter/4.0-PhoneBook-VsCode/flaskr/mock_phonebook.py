@@ -34,7 +34,7 @@ def initialize_mock(phonebook, size=10):
     size=size,
     method=fake.date_time_between,
     start_date=date(2022, 6, 1),
-    end_date=date(2022, 7, 10)
+    end_date=date(2022, 10, 10)
   )
   print(dates)
 

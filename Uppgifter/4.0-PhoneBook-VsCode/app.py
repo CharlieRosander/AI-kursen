@@ -9,7 +9,7 @@ sys.path.append("..")
 
 app = Flask(__name__)
 phonebook = Phonebook(CURR_DIR_PATH + "/data/database.db")
-initialize_mock(phonebook)
+# initialize_mock(phonebook)
 
 # Function to get all entries in the phonebook and return the results
 @app.route("/phonebook/")
@@ -43,12 +43,12 @@ def get_phonebook_rows(num_of_rows):
   return phonebook.get_rows(num_of_rows)
 
 # Function to GET the phonebook by date and return the results
-@app.route("/phonebook/date/<date_start>/<date_end>")
-def get_by_date(date_start, date_end):
-  return phonebook.get_by_date(date_start, date_end)
+@app.route("/phonebook/date/<start_month>/<end_month>")
+def get_by_date(start_month, end_month):
+    return phonebook.get_by_date(start_month, end_month)
 
-# Function to validate the dates of the entries in the phonebook, should only be between 22-06-30 and 22-07-30
+# Function to validate the dates of the entries in the phonebook, should only be between 22-06-01 and today's date
 # if not return an error message, returning the entries that are invalid
 @app.route("/phonebook/validate")
 def validate_dates():
-  return phonebook.validate_dates()
+    return phonebook.validate_dates()

@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine  # sql driver
 import pandas as pd
+from datetime import datetime
 
 class SQLWriter:
   def __init__(self, db_path):
@@ -51,16 +52,26 @@ class Phonebook:
     else:
       return df.head(int(rows)).to_json(orient="records")
   
-  # Function to get the phonebook by date and return the results
-  def get_by_date(self, date_start, date_end):
-    df = self.get_data()
-    return df[(df["added"] >= date_start) & (df["added"] <= date_end)].to_json(orient="records")
+  # Function to get the phonebook by month and return the results between the start and end month
+  def get_by_date(self, start_month, end_month):
+      df = self.get_data()
+      df['added'] = pd.to_datetime(df['added'])
+      return df[(df['added'].dt.month >= int(start_month)) & (df['added'].dt.month <= int(end_month))].to_json(orient="records")
+
+
+  # Function to validate the dates of the entries in the phonebook, should only be between 22-06-01 and today's date
+  # if not return an error message, returning the entries that are invalid
 
   def validate_dates(self):
     df = self.get_data()
-    print(type(df["added"].values))
-    df = df[(df["added"] < "22-06-01") | (df["added"] > "22-07-30")]
-    return df.to_json(orient="records")
+    df['added'] = pd.to_datetime(df['added'], format="%y-%m-%d")
+
+    start_date = datetime.strptime("22-06-01", "%y-%m-%d")
+    end_date = datetime.today()
+
+    invalid_entries = df[(df['added'] < start_date) | (df['added'] > end_date)]
+
+    return invalid_entries.to_json(orient="records", date_format="iso")
 
   def delete_entry(self, name):
       df = self.get_data()
