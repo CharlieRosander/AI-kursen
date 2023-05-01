@@ -1,14 +1,10 @@
-import os
-import requests
-from dotenv import load_dotenv
-
-load_dotenv()
-openweathermap_api_key = os.getenv('OPENWEATHERMAP_API_KEY')
-
-city_query = "stockholm, se"
-
-url = f'http://api.openweathermap.org/data/2.5/weather?q={city_query}&appid={openweathermap_api_key}&units=metric'
-response = requests.get(url).json()
+from forecast_ETL import ForecastETL
 
 
-print(response)
+if __name__ == '__main__':
+    api_call = ForecastETL()
+    api_call.transform_forecast()
+    api_call.save_files()
+    # api_call.plot_forecast()
+    api_call.init_db()
+    print(api_call.harmonized_dataframe)

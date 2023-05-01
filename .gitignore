@@ -1,4 +1,4 @@
-
+\venv
 Docker-compose/airflow-docker/dags/__pycache__/our_first_dag.cpython-37.pyc
 Docker-compose/airflow-docker/logs/dag_id=our_first_dag/run_id=manual__2023-04-25T131556.755125+0000/task_id=first_task/attempt=1.log
 Docker-compose/airflow-docker/logs/dag_id=our_first_dag_v2/run_id=manual__2023-04-25T132156.142711+0000/task_id=first_task/attempt=1.log
@@ -56,3 +56,6 @@ Docker-compose/airflow-docker/logs/scheduler/2023-04-25/native_dags/example_dags
 Docker-compose/airflow-docker/logs/scheduler/2023-04-25/native_dags/example_dags/tutorial_taskflow_api_virtualenv.py.log
 Docker-compose/airflow-docker/logs/scheduler/2023-04-25/our_first_dag.py.log
 Docker-compose/airflow-docker/logs/scheduler/latest
+.env
+Docker-compose
+venv
