@@ -23,12 +23,21 @@ class ForecastETL:
         return openweathermap_api_key
 
     def extract_forecast(self):
-        url = f'http://api.openweathermap.org/data/2.5/forecast?q=' \
-              f'{self.city_query}&appid={self.get_api_key()}&units=metric'
+        try:
+            url = f'http://api.openweathermap.org/data/2.5/forecast?q=' \
+                  f'{self.city_query}&appid={self.get_api_key()}&units=metric'
 
-        self.response = requests.get(url).json()
-        self.raw_data = self.response
-        return self.raw_data
+            response = requests.get(url)
+            response.raise_for_status()
+            self.response = response.json()
+            self.raw_data = self.response
+            return self.raw_data
+        except requests.exceptions.RequestException as e:
+            print(f"Error during API request: {e}")
+            return None
+        except Exception as e:
+            print(f"Error during extracting forecast: {e}")
+            return None
 
     def transform_forecast(self):
         if not self.raw_data:
@@ -55,74 +64,83 @@ class ForecastETL:
         return self.normalized_dataframe, self.harmonized_dataframe
 
     def save_files(self):
-        if not os.path.exists("Docs"):
-            os.mkdir("Docs")
+        try:
+            if not os.path.exists("Docs"):
+                os.mkdir("Docs")
 
-        with open('Docs/raw_data_json.json', 'w') as outfile:
-            json.dump(self.raw_data, outfile)
+            with open('Docs/raw_data_json.json', 'w') as outfile:
+                json.dump(self.raw_data, outfile)
 
-        self.normalized_dataframe.to_json(
-            'Docs/normalized_dataframe_json.json')
-        self.harmonized_dataframe.to_csv(
-            'Docs/harmonized_forecast.csv', index=False)
+            self.normalized_dataframe.to_json(
+                'Docs/normalized_dataframe_json.json')
+            self.harmonized_dataframe.to_csv(
+                'Docs/harmonized_forecast.csv', index=False)
+        except Exception as e:
+            print(f"Error during saving files: {e}")
 
     def init_db(self):
-        load_dotenv()
-        db_password = os.getenv('DB_PASSWORD')
+        try:
+            load_dotenv()
+            db_password = os.getenv('DB_PASSWORD')
 
-        # Connect to the database if it exists, otherwise create a new one
-        connection = psycopg2.connect(
-            host="localhost",
-            database="postgres",
-            user="postgres",
-            password=db_password,
-            port=5432)
+            # Connect to the database if it exists, otherwise create a new one
+            connection = psycopg2.connect(
+                host="localhost",
+                database="postgres",
+                user="postgres",
+                password=db_password,
+                port=5432)
 
-        # Create a cursor
-        cursor = connection.cursor()
+            # Create a cursor
+            cursor = connection.cursor()
 
-        # Create the date dimension table
-        cursor.execute("DROP TABLE IF EXISTS dim_date CASCADE")
-        cursor.execute("CREATE TABLE dim_date "
-                       "(year INTEGER, "
-                       "month INTEGER, "
-                       "day INTEGER, "
-                       "full_date DATE PRIMARY KEY)")
+            # Create the date dimension table
+            cursor.execute("DROP TABLE IF EXISTS dim_date CASCADE")
+            cursor.execute("CREATE TABLE dim_date "
+                        "(year INTEGER, "
+                        "month INTEGER, "
+                        "day INTEGER, "
+                        "full_date DATE PRIMARY KEY)")
 
-        # Create the time dimension table
-        cursor.execute("DROP TABLE IF EXISTS dim_time CASCADE")
-        cursor.execute("CREATE TABLE dim_time "
-                       "(hour INTEGER, "
-                       "minute INTEGER, "
-                       "full_time TIME PRIMARY KEY)")
+            # Create the time dimension table
+            cursor.execute("DROP TABLE IF EXISTS dim_time CASCADE")
+            cursor.execute("CREATE TABLE dim_time "
+                        "(hour INTEGER, "
+                        "minute INTEGER, "
+                        "full_time TIME PRIMARY KEY)")
 
-        # Create the location dimension table
-        cursor.execute("DROP TABLE IF EXISTS dim_location CASCADE")
-        cursor.execute("CREATE TABLE dim_location "
-                       "(latitude REAL, "
-                       "longitude REAL, "
-                       "location_city TEXT PRIMARY KEY,"
-                       "location_country TEXT)")
+            # Create the location dimension table
+            cursor.execute("DROP TABLE IF EXISTS dim_location CASCADE")
+            cursor.execute("CREATE TABLE dim_location "
+                        "(latitude REAL, "
+                        "longitude REAL, "
+                        "location_city TEXT PRIMARY KEY,"
+                        "location_country TEXT)")
 
-        # Create the weather table with foreign keys to the dimension tables
-        cursor.execute("DROP TABLE IF EXISTS weather CASCADE")
-        cursor.execute("CREATE TABLE weather "
-                       "(fetch_date TEXT, "
-                       "date_id DATE REFERENCES dim_date(full_date), "
-                       "time_id TIME REFERENCES dim_time(full_time), "
-                       "location_id TEXT REFERENCES dim_location(location_city), "
-                       "temperature REAL, "
-                       "air_pressure REAL, "
-                       "weather_description TEXT, "
-                       "precipitation REAL)")
+            # Create the weather table with foreign keys to the dimension tables
+            cursor.execute("DROP TABLE IF EXISTS weather CASCADE")
+            cursor.execute("CREATE TABLE weather "
+                        "(fetch_date TEXT, "
+                        "date_id DATE REFERENCES dim_date(full_date), "
+                        "time_id TIME REFERENCES dim_time(full_time), "
+                        "location_id TEXT REFERENCES dim_location(location_city), "
+                        "temperature REAL, "
+                        "air_pressure REAL, "
+                        "weather_description TEXT, "
+                        "precipitation REAL)")
 
-        # Load the data into the table
-        self.load_db(connection, cursor)
+            # Load the data into the table
+            self.load_db(connection, cursor)
 
-        # Close the cursor and the connection
-        cursor.close()
-        connection.close()
+            # Close the cursor and the connection
+            cursor.close()
+            connection.close()
 
+        except psycopg2.Error as e:
+            print(f"Error during database connection or operation: {e}")
+        except Exception as e:
+            print(f"Error during initializing database: {e}")
+    
     def load_db(self, connection, cursor):
         # Insert the data into the dimension tables and retrieve the primary keys
         cursor.execute("INSERT INTO dim_location (location_city, location_country, latitude, longitude) VALUES (%s, %s, %s, %s) "
