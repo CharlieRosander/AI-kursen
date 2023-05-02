@@ -41,7 +41,7 @@ Replace <your_api_key> with the API key you received from OpenWeatherMap.
 The database model used in this program is the default postgresql database that is created when you first install postgres,
 If you want you can change the db model in the forecast_etl.py on these lines:
 
-    ```
+    ```py
     connection = psycopg2.connect(
             host="localhost",
             database="postgres",
@@ -92,3 +92,20 @@ The script generates the following output files:
 
 A line plot of the forecasted temperatures will be displayed in a separate window.
 
+The program uses PostGresql to store the data in tables and dimensional tables.
+
+## Possible improvements
+### Make the script more user-friendly:
+Right now you have to modify the code to get certain results. For example the city request is explicitly set,
+ this was done with a user input before but we could not make it work nicely with Airflow.
+ 
+ Plotting the graph could also be optional, where you get an option to plot it or not.
+
+### Sharing the project
+
+
+
+## Group-members
+Charlie Rosander
+Ronny Andersson
+Jacob Eriksson
