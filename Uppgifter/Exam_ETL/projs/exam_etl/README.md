@@ -31,14 +31,14 @@ Replace <your_api_key> with the API key you received from OpenWeatherMap.
 
 Set up a PostgreSQL database and provide the password in the .env file:
     
-    ```py
+    ```
     DB_PASSWORD=<your_postgresql_password>
     ```
 
 The database model used in this program is the default postgresql database that is created when you first install postgres,
 If you want you can change the db model in the forecast_etl.py on these lines:
 
-    ```py
+    ```
     connection = psycopg2.connect(
             host="localhost",
             database="postgres",
