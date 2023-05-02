@@ -19,11 +19,11 @@ This is a weather forecast ETL (Extract, Transform, Load) Python script that fet
 
     To install the required packages, run:
 
-    pip install pandas requests psycopg2 matplotlib python-dotenv
+        pip install pandas requests psycopg2 matplotlib python-dotenv
 
     OR if you have the requirements.txt
 
-    pip install -r requirements.txt
+        pip install -r requirements.txt
 
 # 🔧 Setup
     Set up a PostgreSQL database and provide the password in the .env file:
