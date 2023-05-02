@@ -3,6 +3,7 @@
 This is a weather forecast ETL (Extract, Transform, Load) Python script that fetches weather forecast data from the OpenWeatherMap API, processes the data, and stores it in a PostgreSQL database. The script also generates a line plot of the forecasted temperatures.
 # Prerequisites
 NOTE: I've had some issues with psycopg2 and noticed that you might have to install **psycopg2** outside the venv to get it working
+
     Python 3.6 or higher
     pandas
     requests
@@ -20,6 +21,12 @@ OR if you have the requirements.txt
 
 ## Setup
 
+Set up a PostgreSQL database and provide the password in the .env file:
+    
+    ```
+    DB_PASSWORD=<your_postgresql_password>
+    ```
+
 Sign up for a free account at OpenWeatherMap and obtain an API key.
 Create a .env file in the root directory of the project and add the following lines:
 
@@ -29,11 +36,7 @@ Create a .env file in the root directory of the project and add the following li
 Replace <your_api_key> with the API key you received from OpenWeatherMap.
 
 
-Set up a PostgreSQL database and provide the password in the .env file:
-    
-    ```
-    DB_PASSWORD=<your_postgresql_password>
-    ```
+
 
 The database model used in this program is the default postgresql database that is created when you first install postgres,
 If you want you can change the db model in the forecast_etl.py on these lines:

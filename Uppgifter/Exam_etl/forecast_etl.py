@@ -182,11 +182,9 @@ class ForecastETL:
         ax.set_ylabel('Temperature (°C)', fontsize=16)
         ax.set_xticks(self.harmonized_dataframe['Time'][::2])
         ax.set_xticklabels(self.harmonized_dataframe['Time'][::2], rotation=45, fontsize=12)
-        ax.set_yticklabels(ax.get_yticks(), fontsize=12)
-        ax.grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
         ax.legend(fontsize=14)
 
         # Display the plot
-        plt.tight_layout()
+        # plt.tight_layout()
         plt.show()
 
