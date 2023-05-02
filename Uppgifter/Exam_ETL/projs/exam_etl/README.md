@@ -12,7 +12,11 @@ Prerequisites
 
 To install the required packages, run:
 
-pip install pandas requests psycopg2 matplotlib python-dotenv
+    pip install pandas requests psycopg2 matplotlib python-dotenv
+
+OR if you have the requirements.txt
+
+    pip install -r requirements.txt
 
 ## Setup
 
@@ -24,11 +28,21 @@ OPENWEATHERMAP_API_KEY=<your_api_key>
 
 Replace <your_api_key> with the API key you received from OpenWeatherMap.
 
-    
 
 Set up a PostgreSQL database and provide the password in the .env file:
     
     DB_PASSWORD=<your_postgresql_password>
+
+The database model used in this program is the default postgresql database that is created when you first install postgres,
+If you want you can change the db model in the forecast_etl.py on these lines:
+    ```py
+    connection = psycopg2.connect(
+            host="localhost",
+            database="postgres",
+            user="postgres",
+            password=db_password,
+            port=5432)
+    ```
 
 
 Instantiate the ForecastETL class:
