@@ -1,8 +1,8 @@
 # ForecastETL
 
 This is a weather forecast ETL (Extract, Transform, Load) Python script that fetches weather forecast data from the OpenWeatherMap API, processes the data, and stores it in a PostgreSQL database. The script also generates a line plot of the forecasted temperatures.
-Prerequisites
-
+# Prerequisites
+NOTE: I've had some issues with psycopg2 and noticed that you might have to install **psycopg2** outside the venv to get it working
     Python 3.6 or higher
     pandas
     requests

@@ -172,6 +172,21 @@ class ForecastETL:
         connection.commit()
 
     def plot_forecast(self):
-        self.harmonized_dataframe.plot(title=f"Temperatures in {self.city_query}",
-                                       x='Time', y='Temperature', kind='line', marker='o', linestyle='solid')
+        fig, ax = plt.subplots(figsize=(10, 6))
+
+        # Customize the plot
+        ax.plot(self.harmonized_dataframe['Time'], self.harmonized_dataframe['Temperature'],
+                marker='o', linestyle='solid', linewidth=2, markersize=8, label='Temperature')
+        ax.set_title(f"Temperatures in {self.city_query}", fontsize=20, fontweight='bold')
+        ax.set_xlabel('Time', fontsize=16)
+        ax.set_ylabel('Temperature (°C)', fontsize=16)
+        ax.set_xticks(self.harmonized_dataframe['Time'][::2])
+        ax.set_xticklabels(self.harmonized_dataframe['Time'][::2], rotation=45, fontsize=12)
+        ax.set_yticklabels(ax.get_yticks(), fontsize=12)
+        ax.grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
+        ax.legend(fontsize=14)
+
+        # Display the plot
+        plt.tight_layout()
         plt.show()
+
