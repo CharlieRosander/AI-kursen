@@ -1,0 +1,86 @@
+# ForecastETL
+
+This is a weather forecast ETL (Extract, Transform, Load) Python script that fetches weather forecast data from the OpenWeatherMap API, processes the data, and stores it in a PostgreSQL database. The script also generates a line plot of the forecasted temperatures.
+Prerequisites
+
+    Python 3.6 or higher
+    pandas
+    requests
+    psycopg2
+    matplotlib
+    python-dotenv
+
+To install the required packages, run:
+
+pip install pandas requests psycopg2 matplotlib python-dotenv
+
+## Setup
+
+    Sign up for a free account at OpenWeatherMap and obtain an API key.
+    Create a .env file in the root directory of the project and add the following line:
+
+
+OPENWEATHERMAP_API_KEY=<your_api_key>
+
+Replace <your_api_key> with the API key you received from OpenWeatherMap.
+
+    Set up a PostgreSQL database and provide the connection details in the .env file:
+
+
+DB_PASSWORD=<your_postgresql_password>
+
+Replace <your_postgresql_password> with the password for your PostgreSQL database.
+Usage
+
+    Instantiate the ForecastETL class:
+
+
+
+forecast_etl = ForecastETL()
+
+    Extract the forecast data:
+
+
+
+forecast_etl.extract_forecast()
+
+    Transform the forecast data into two DataFrames (normalized and harmonized):
+
+
+
+normalized_dataframe, harmonized_dataframe = forecast_etl.transform_forecast()
+
+    Save the forecast data to files:
+
+
+
+forecast_etl.save_files()
+
+    Initialize the PostgreSQL database and create the required tables:
+
+
+
+forecast_etl.init_db()
+
+    Load the data into the PostgreSQL database:
+
+
+
+forecast_etl.load_db(connection, cursor)
+
+    Plot the forecast data:
+
+
+
+forecast_etl.plot_forecast()
+
+## Output
+
+The script generates the following output files:
+
+    Docs/raw_data_json.json: Raw JSON data from the OpenWeatherMap API response
+    Docs/normalized_dataframe_json.json: Normalized JSON data
+    Docs/harmonized_forecast.csv: Harmonized CSV data
+
+A line plot of the forecasted temperatures will be displayed in a separate window.
+
