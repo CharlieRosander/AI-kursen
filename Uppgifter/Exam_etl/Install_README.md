@@ -1,9 +1,9 @@
 ### 1. Install/reset Ubuntu
-```
+
 Pc settings -> Apps & Features -> Ubuntu -> Advanced options -> Reset
 
 You might also have to install WSL through Microsoft Store, as systemd/systemctl is not enabled by default when "installing wsl through enabling it in windows". When setting up the pgadmin4-webmode you might get an error if this is not enabled.
-```
+
 ### 2. Update WSL, install venv + airflow and set up the airflow-directory
 ```
 sudo apt update
