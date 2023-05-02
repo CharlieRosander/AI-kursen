@@ -8,6 +8,8 @@ NOTE: I've had some issues with psycopg2 and noticed that you might have to inst
     pandas
     requests
     psycopg2
+        OR
+    psycopg2-binary
     matplotlib
     python-dotenv
 
@@ -23,9 +25,9 @@ OR if you have the requirements.txt
 
 Set up a PostgreSQL database and provide the password in the .env file:
     
-    ```
+    
     DB_PASSWORD=<your_postgresql_password>
-    ```
+    
 
 Sign up for a free account at OpenWeatherMap and obtain an API key.
 Create a .env file in the root directory of the project and add the following lines:
@@ -38,14 +40,14 @@ Replace <your_api_key> with the API key you received from OpenWeatherMap.
 The database model used in this program is the default postgresql database that is created when you first install postgres,
 If you want you can change the db model in the forecast_etl.py on these lines:
 
-    ```py
+    
     connection = psycopg2.connect(
             host="localhost",
             database="postgres",
             user="postgres",
             password=db_password,
             port=5432)
-    ```
+    
 
 
 Instantiate the ForecastETL class:
@@ -87,7 +89,7 @@ The script generates the following output files:
 
 A line plot of the forecasted temperatures will be displayed in a separate window.
 
-The program uses PostGresql to store the data in tables and dimensional tables.
+The program uses PostGreSQL to store the data in tables and dimensional tables.
 
 ## Possible improvements & Thoughts
 
