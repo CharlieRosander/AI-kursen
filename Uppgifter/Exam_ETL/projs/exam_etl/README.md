@@ -24,55 +24,43 @@ OPENWEATHERMAP_API_KEY=<your_api_key>
 
 Replace <your_api_key> with the API key you received from OpenWeatherMap.
 
-    Set up a PostgreSQL database and provide the connection details in the .env file:
+    
+
+Set up a PostgreSQL database and provide the password in the .env file:
+    
+    DB_PASSWORD=<your_postgresql_password>
 
 
-DB_PASSWORD=<your_postgresql_password>
+Instantiate the ForecastETL class:
 
-Replace <your_postgresql_password> with the password for your PostgreSQL database.
-Usage
-
-    Instantiate the ForecastETL class:
+    forecast_etl = ForecastETL()
 
 
+Extract the forecast data:
 
-forecast_etl = ForecastETL()
-
-    Extract the forecast data:
-
+    forecast_etl.extract_forecast()
 
 
-forecast_etl.extract_forecast()
+Transform the forecast data into two DataFrames (normalized and harmonized):
 
-    Transform the forecast data into two DataFrames (normalized and harmonized):
+    normalized_dataframe, harmonized_dataframe = forecast_etl.transform_forecast()
 
+Save the forecast data to files:
 
+    forecast_etl.save_files()
 
-normalized_dataframe, harmonized_dataframe = forecast_etl.transform_forecast()
+Initialize the PostgreSQL database and create the required tables:
 
-    Save the forecast data to files:
+    forecast_etl.init_db()
 
-
-
-forecast_etl.save_files()
-
-    Initialize the PostgreSQL database and create the required tables:
+Load the data into the PostgreSQL database:
 
 
+    forecast_etl.load_db(connection, cursor)
 
-forecast_etl.init_db()
+Plot the forecast data:
 
-    Load the data into the PostgreSQL database:
-
-
-
-forecast_etl.load_db(connection, cursor)
-
-    Plot the forecast data:
-
-
-
-forecast_etl.plot_forecast()
+    forecast_etl.plot_forecast()
 
 ## Output
 
