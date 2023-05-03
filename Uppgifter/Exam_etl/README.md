@@ -38,8 +38,10 @@ This is a weather forecast ETL (Extract, Transform, Load) Python script that fet
 
     Replace <your_api_key> with the API key you received from OpenWeatherMap.
 
+    Replace <your_postgresql_password> with the password you set for your PostgreSQL database.
+
     The database model used in this program is the default postgresql database
-     that is created when you first install postgres,
+     that is created when you first install postgres
 
     If you want you can change the db model in the forecast_etl.py on these lines:
 
@@ -51,6 +53,12 @@ This is a weather forecast ETL (Extract, Transform, Load) Python script that fet
                 password=db_password,
                 port=5432)
 ```
+
+# 🏃‍♂️ Running the script
+     To run the program, run main.py in your IDE or from the command line:
+
+        python main.py
+
 
 #### Instantiate the ForecastETL class:
     forecast_etl = ForecastETL()
