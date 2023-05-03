@@ -19,7 +19,7 @@ with DAG(
     start_date=datetime(2023, 4, 29),
     schedule_interval="@daily"
 ) as dag:
-    from forecast_ETL import ForecastETL
+    from ..forecast_etl import ForecastETL
 
     @task()
     def run_entire_program():

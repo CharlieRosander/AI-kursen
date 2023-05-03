@@ -113,6 +113,9 @@ This is a weather forecast ETL (Extract, Transform, Load) Python script that fet
 ### 🌐 Additional data sources:
     Integrate more data sources to enhance the quality and comprehensiveness of the weather forecast.
 
+### 📈 Plotting:
+    The plot can be improved for more readability and better visualization of the data.
+
 ### 🧑‍💻 Group-members
 
     Charlie Rosander
