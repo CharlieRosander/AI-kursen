@@ -11,9 +11,9 @@ from tensorflow.python.keras.regularizers import l1, l2
 from keras.preprocessing.image import ImageDataGenerator
 
 # Variables to hold the number of train and test images and epochs.
-epochs = 30
-train_img_num = 2000  # Adjust this variable to change the number of training images
-test_img_num = 100  # Adjust this variable to change the number of test images
+epochs = 10
+train_images_num = 500
+test_images_num = 100
 
 
 # define function to load the images
@@ -21,18 +21,11 @@ def load_images(folder, limit):
     images = []
     labels = []
     filenames = []
-    cats_counter = 0
-    dogs_counter = 0
-    for filename in os.listdir(folder):
-        if filename.startswith('cat') and cats_counter < limit / 2:  # Load 'cat' images
+    for filename in os.listdir(folder)[:limit]:  # Limit the number of files read
+        if filename.startswith('cat'):
             label = 0
-            cats_counter += 1
-        elif filename.startswith('dog') and dogs_counter < limit / 2:  # Load 'dog' images
-            label = 1
-            dogs_counter += 1
         else:
-            continue
-
+            label = 1
         img = cv2.imread(os.path.join(folder, filename))
         if img is not None:
             img = cv2.resize(img, (84, 84))  # resize image to 84x84 pixels
@@ -44,10 +37,8 @@ def load_images(folder, limit):
 
 
 # Load the train and test images.
-X_train, y_train, train_filenames = load_images('./images/train', train_img_num)
-print(f"Loaded {train_img_num} train images")
-X_test, y_test, test_filenames = load_images('./images/test', test_img_num)
-print(f"Loaded {test_img_num} test images")
+X_train, y_train, train_filenames = load_images('./images/train', limit=train_images_num)
+X_test, y_test, test_filenames = load_images('./images/test', limit=test_images_num)
 
 # Convert lists to numpy arrays, and apply one-hot encoding to the labels.
 X_train = np.array(X_train)
@@ -87,8 +78,8 @@ datagen = ImageDataGenerator(
 # Early stopping with a higher patience.
 early_stopping = EarlyStopping(monitor='val_loss', patience=5)
 
-# Train the model.
 batch_size = 32
+# Train the model.
 model.fit(
     datagen.flow(X_train, y_train, batch_size=batch_size),
     steps_per_epoch=len(X_train) / 32,
@@ -103,7 +94,7 @@ test_loss, test_acc = model.evaluate(X_test, y_test, verbose=2)
 print('\nTest accuracy:', test_acc)
 
 # Choose a random test image
-random_index = np.random.choice(X_test.shape[0])
+random_index = np.random.choice(X_test.shape[0], size=test_images_num)
 
 test_image = X_test[random_index]
 test_label = y_test[random_index]
@@ -120,8 +111,7 @@ prediction = model.predict(test_image)
 predicted_label = np.argmax(prediction)
 
 # Choose 10 random test images
-# Choose 10 random test images
-random_indices = np.random.choice(X_test.shape[0], size=test_img_num)
+random_indices = np.random.choice(X_test.shape[0], size=test_images_num)
 
 # Keep track of correct guesses
 correct_guesses = 0
@@ -150,6 +140,8 @@ overall_accuracy = (correct_guesses / 100) * 100
 
 print(f"{correct_guesses}/100 were guessed correctly, giving an overall accuracy of {overall_accuracy}%")
 
+# First try to open the file to read, and if that fails, create it.
+
 
 def get_next_run_number(file_name):
     try:
@@ -166,17 +158,18 @@ def get_next_run_number(file_name):
 
 
 # Get the run number
-run_number = get_next_run_number('./Docs/test_results.txt')
+run_number = get_next_run_number('test_results.txt')
 
 # Write the results to a file
-with open('./Docs/test_results.txt', 'a') as f:
+with open('test_results.txt', 'a') as f:
     f.write(f'Test-run: {run_number}\n')
-    f.write(f'Train images: {train_img_num}\n')
-    f.write(f'Test images: {test_img_num}\n')
+    f.write(f'Train images: {train_images_num}\n')
+    f.write(f'Test images: {test_images_num}\n')
     f.write(f'Test accuracy: {test_acc}\n')
-    f.write(f'Correct guesses: {correct_guesses}/{test_img_num}\n')
-    f.write(f'Overall accuracy: {overall_accuracy}%\n')
+    f.write(f'Correct guesses: {correct_guesses}/{test_images_num}\n')
+    f.write(f'Overall accuracy in %: {overall_accuracy}%\n')
     f.write(f'Epochs: {epochs}\n')
     f.write(f'Batch size: {batch_size}\n')
     f.write(f'Early stopping patience: {early_stopping.patience}\n')
     f.write('\n\n')
+
