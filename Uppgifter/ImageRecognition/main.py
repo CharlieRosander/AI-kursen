@@ -11,9 +11,10 @@ from tensorflow.python.keras.regularizers import l1, l2
 from keras.preprocessing.image import ImageDataGenerator
 
 # Variables to hold the number of train and test images and epochs.
-epochs = 30
-train_img_num = 2000  # Adjust this variable to change the number of training images
+epochs = 15
+train_img_num = 500  # Adjust this variable to change the number of training images
 test_img_num = 100  # Adjust this variable to change the number of test images
+batch_size = 32
 
 
 # define function to load the images
@@ -87,8 +88,21 @@ datagen = ImageDataGenerator(
 # Early stopping with a higher patience.
 early_stopping = EarlyStopping(monitor='val_loss', patience=5)
 
+history = model.fit(
+    datagen.flow(X_train, y_train, batch_size=batch_size),
+    steps_per_epoch=len(X_train) / 32,
+    epochs=epochs,
+    validation_data=(X_test, y_test),
+    callbacks=[early_stopping]
+)
+
+# Number of epochs the training was run for
+num_epochs = len(history.history['loss'])
+
+# Number of epoch at which training was stopped
+stopping_epoch = early_stopping.stopped_epoch
+
 # Train the model.
-batch_size = 32
 model.fit(
     datagen.flow(X_train, y_train, batch_size=batch_size),
     steps_per_epoch=len(X_train) / 32,
@@ -169,14 +183,20 @@ def get_next_run_number(file_name):
 run_number = get_next_run_number('./Docs/test_results.txt')
 
 # Write the results to a file
+# Write the results to a file
 with open('./Docs/test_results.txt', 'a') as f:
     f.write(f'Test-run: {run_number}\n')
     f.write(f'Train images: {train_img_num}\n')
     f.write(f'Test images: {test_img_num}\n')
     f.write(f'Test accuracy: {test_acc}\n')
     f.write(f'Correct guesses: {correct_guesses}/{test_img_num}\n')
-    f.write(f'Overall accuracy: {overall_accuracy}%\n')
-    f.write(f'Epochs: {epochs}\n')
+    f.write(f'Overall accuracy in %: {overall_accuracy}%\n')
+    f.write(f'Epochs run: {num_epochs}\n')
+    if stopping_epoch > 0:
+        f.write(f'Training stopped early at epoch {stopping_epoch}\n')
+    else:
+        f.write("Training completed and did not stop early.\n")
     f.write(f'Batch size: {batch_size}\n')
     f.write(f'Early stopping patience: {early_stopping.patience}\n')
     f.write('\n\n')
+
