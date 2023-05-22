@@ -71,13 +71,13 @@ datagen = ImageDataGenerator(
 )
 
 # Early stopping with a higher patience.
-early_stopping = EarlyStopping(monitor='val_loss', patience=10)
+early_stopping = EarlyStopping(monitor='val_loss', patience=5)
 
 # Train the model.
 model.fit(
     datagen.flow(X_train, y_train, batch_size=32),
     steps_per_epoch=len(X_train) / 32,
-    epochs=20,  # Increase the number of epochs
+    epochs=30,  # Increase the number of epochs
     validation_data=(X_test, y_test),
     callbacks=[early_stopping]
 )
