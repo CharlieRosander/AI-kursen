@@ -1,7 +1,7 @@
 import cv2
 import os
 import numpy as np
-import matplotlib.pyplot as plt
+import tensorflow as tf
 from tensorflow.python.keras.utils.np_utils import to_categorical
 from tensorflow.python.keras.models import Sequential
 from tensorflow.python.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
@@ -11,9 +11,9 @@ from tensorflow.python.keras.regularizers import l1, l2
 from keras.preprocessing.image import ImageDataGenerator
 
 # Variables to hold the number of train and test images and epochs.
-epochs = 15
-train_img_num = 500  # Adjust this variable to change the number of training images
-test_img_num = 100  # Adjust this variable to change the number of test images
+epochs = 30
+train_img_num = 2000  # Adjust this variable to change the number of training images
+test_img_num = int(train_img_num * 0.3)  # Adjust this variable to change the number of test images
 batch_size = 32
 
 
@@ -88,19 +88,8 @@ datagen = ImageDataGenerator(
 # Early stopping with a higher patience.
 early_stopping = EarlyStopping(monitor='val_loss', patience=5)
 
-history = model.fit(
-    datagen.flow(X_train, y_train, batch_size=batch_size),
-    steps_per_epoch=len(X_train) / 32,
-    epochs=epochs,
-    validation_data=(X_test, y_test),
-    callbacks=[early_stopping]
-)
-
-# Number of epochs the training was run for
-num_epochs = len(history.history['loss'])
-
-# Number of epoch at which training was stopped
-stopping_epoch = early_stopping.stopped_epoch
+# Create an instance of the History callback
+history = tf.keras.callbacks.History()
 
 # Train the model.
 model.fit(
@@ -108,8 +97,14 @@ model.fit(
     steps_per_epoch=len(X_train) / 32,
     epochs=epochs,  # Increase the number of epochs
     validation_data=(X_test, y_test),
-    callbacks=[early_stopping]
+    callbacks=[early_stopping, history]
 )
+
+# Number of epoch at which training was stopped
+stopping_epoch = early_stopping.stopped_epoch
+
+# Then you can retrieve the number of epochs like this:
+num_epochs = len(history.history['loss'])
 
 # Evaluate the model using the test data.
 test_loss, test_acc = model.evaluate(X_test, y_test, verbose=2)
@@ -133,7 +128,6 @@ prediction = model.predict(test_image)
 # The class with the highest probability is the model's prediction
 predicted_label = np.argmax(prediction)
 
-# Choose 10 random test images
 # Choose 10 random test images
 random_indices = np.random.choice(X_test.shape[0], size=test_img_num)
 
@@ -160,9 +154,9 @@ for i in random_indices:
         correct_guesses += 1
 
 # Calculate accuracy
-overall_accuracy = (correct_guesses / 100) * 100
+overall_accuracy = (correct_guesses / test_img_num) * 100
 
-print(f"{correct_guesses}/100 were guessed correctly, giving an overall accuracy of {overall_accuracy}%")
+print(f"{correct_guesses}/{test_img_num} were guessed correctly, giving an overall accuracy of {overall_accuracy}%")
 
 
 def get_next_run_number(file_name):
@@ -183,20 +177,18 @@ def get_next_run_number(file_name):
 run_number = get_next_run_number('./Docs/test_results.txt')
 
 # Write the results to a file
-# Write the results to a file
 with open('./Docs/test_results.txt', 'a') as f:
     f.write(f'Test-run: {run_number}\n')
     f.write(f'Train images: {train_img_num}\n')
     f.write(f'Test images: {test_img_num}\n')
-    f.write(f'Test accuracy: {test_acc}\n')
-    f.write(f'Correct guesses: {correct_guesses}/{test_img_num}\n')
-    f.write(f'Overall accuracy in %: {overall_accuracy}%\n')
     f.write(f'Epochs run: {num_epochs}\n')
-    if stopping_epoch > 0:
-        f.write(f'Training stopped early at epoch {stopping_epoch}\n')
-    else:
-        f.write("Training completed and did not stop early.\n")
     f.write(f'Batch size: {batch_size}\n')
     f.write(f'Early stopping patience: {early_stopping.patience}\n')
+    f.write(f'Correct guesses: {correct_guesses}/{test_img_num}\n')
+    f.write(f'Test accuracy: {test_acc}\n')
+    f.write(f'Overall accuracy: {overall_accuracy:.3f}%\n')
+    if stopping_epoch > 0:
+        f.write(f'Training stopped early at epoch: {stopping_epoch}\n')
+    else:
+        f.write("Training completed and did not stop early.\n")
     f.write('\n\n')
-
