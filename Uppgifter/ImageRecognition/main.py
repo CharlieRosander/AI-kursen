@@ -60,8 +60,8 @@ class DataHandler:
         return images, labels, filenames
 
     def load_training_and_test_data(self):
-        train_folder = './images/train'
-        test_folder = './images/test'
+        train_folder = './train'
+        test_folder = './test'
 
         # Check if directories exist, if not, create them
         if not os.path.exists(train_folder):
@@ -89,7 +89,7 @@ class ModelHandler:
         self.saved_model_path = f'./Models/CatDog_classifier.h5'
         self.model = None
         self.history = tf.keras.callbacks.History()
-        self.early_stopping = EarlyStopping(monitor='val_accuracy', patience=5)
+        self.early_stopping = EarlyStopping(monitor='val_accuracy', patience=150)
 
     def create_new_model(self):
         models_folder = './Models'
@@ -117,10 +117,9 @@ class ModelHandler:
             MaxPooling2D(pool_size=(2, 2)),
             Flatten(),
             Dense(256, activation='relu', kernel_regularizer=regularizer),
-            Dropout(0.5),
-            Dense(2, activation='softmax')
+            Dense(2, activation='sigmoid')
         ])
-        self.model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+        self.model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
         self.train_model()
         self.model.save(self.saved_model_path)
 
@@ -135,33 +134,34 @@ class ModelHandler:
         )
 
     def continue_training_model(self):
-        models_folder = './Models'
+      models_folder = './Models'
 
-        # Check if directories exist, if not, create them
-        if not os.path.exists(models_folder):
-            os.makedirs(models_folder)
+      # Check if directories exist, if not, create them
+      if not os.path.exists(models_folder):
+          os.makedirs(models_folder)
 
-        previous_accuracy = Tester.get_previous_accuracy()
+      previous_accuracy = Tester.get_previous_accuracy()
 
-        if os.path.isfile(self.saved_model_path):
-            self.model = load_model(self.saved_model_path)
-            print("Continuing training...")
-            self.train_model()
+      if os.path.isfile(self.saved_model_path):
+          self.model = load_model(self.saved_model_path)
+          print("Continuing training...")
+          self.train_model()
 
-            latest_accuracy = self.history.history['val_accuracy'][-1]
+          latest_accuracy = self.history.history['val_accuracy'][-1]
 
-            print("The model will only be saved if the accuracy is higher than the previous accuracy.")
-            print(f"Previous accuracy: {previous_accuracy}")
-            print(f"Latest accuracy: {latest_accuracy}")
+          print("The model will only be saved if the accuracy is higher than the previous accuracy.")
+          print(f"Previous accuracy: {previous_accuracy}")
+          print(f"Latest accuracy: {latest_accuracy}")
 
-            if latest_accuracy > previous_accuracy:
-                self.model.save(self.saved_model_path)
-                print("\nModel saved.")
-            else:
-                print("\nModel not saved.")
-        else:
-            print("No saved model was found, creating a new model.")
-            self.create_new_model()
+          if latest_accuracy > previous_accuracy:
+              self.model.save(self.saved_model_path)
+              print("\nModel saved.")
+          else:
+              print("\nModel not saved.")
+      else:
+          print("No saved model was found, creating a new model.")
+          self.create_new_model()
+
 
     def handle_model_training(self):
         if os.path.isfile(self.saved_model_path):
@@ -286,9 +286,12 @@ class Tester:
         print("Test results saved to ./Docs/test_results.txt.")
 
     def plot_training_results(self):
+        if not os.path.exists('./Plots/'):
+            os.makedirs('./Plots/')
+
+
         # Plot training & validation accuracy values
         plt.figure(figsize=(12, 4))
-
         plt.subplot(1, 2, 1)
         plt.plot(self.model_handler.history.history['accuracy'])
         plt.plot(self.model_handler.history.history['val_accuracy'])
@@ -296,6 +299,7 @@ class Tester:
         plt.ylabel('Accuracy')
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Validation'], loc='upper left')
+        plt.savefig("./Plots/acc_vals.jpg")
 
         # Plot training & validation loss values
         plt.subplot(1, 2, 2)
@@ -305,6 +309,28 @@ class Tester:
         plt.ylabel('Loss')
         plt.xlabel('Epoch')
         plt.legend(['Train', 'Validation'], loc='upper left')
+        plt.savefig("./Plots/loss_vals.jpg")
+
+        plt.tight_layout()
+        plt.show()
+
+        plt.figure(figsize=(14, 6))
+
+        # Plot the training loss
+        plt.subplot(1, 2, 1)
+        plt.plot(self.model_handler.history.history['loss'], label='Training Loss')
+        plt.title("Training and Validation Loss")
+        plt.xlabel("Epochs")
+        plt.ylabel("Loss")
+        plt.legend()
+
+        # Plot the training accuracy
+        plt.subplot(1, 2, 2)
+        plt.plot(self.model_handler.history.history['accuracy'], label='Training Accuracy')
+        plt.title("Training and Validation Accuracy")
+        plt.xlabel("Epochs")
+        plt.ylabel("Accuracy")
+        plt.legend()
 
         plt.tight_layout()
         plt.show()
@@ -321,10 +347,10 @@ else:
 
 #############################################
 # Define constants and hyperparameters
-train_img_num = 3000
+train_img_num = 4000
 test_img_num = int(train_img_num * 0.2)
-batch_size = 32
-epochs = 15
+batch_size = 16
+epochs = 30
 timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
 #############################################
 
