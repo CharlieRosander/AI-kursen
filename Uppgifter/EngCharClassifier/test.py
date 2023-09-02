@@ -3,20 +3,16 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
-from keras.utils import to_categorical
-from keras.models import Sequential, load_model
-from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
-from keras.callbacks import EarlyStopping
-from keras.preprocessing.image import ImageDataGenerator
-from keras.regularizers import l1, l2, l1_l2
-from concurrent.futures import ThreadPoolExecutor
+from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.models import Sequential, load_model
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.regularizers import l1, l2, l1_l2
 from sklearn.model_selection import train_test_split
 import pandas as pd
+from concurrent.futures import ThreadPoolExecutor
 
 #################### VARS ######################
-regularization_rate = 0.001
-epoch_num = 35
-batch_size = 16
 directory_path = "./EngChars/Img/"
 csv_path = "./EngChars/english.csv"
 ################################################
@@ -51,8 +47,7 @@ def load_images_from_csv(csv_path, directory_path):
     df = pd.read_csv(csv_path)
 
     with ThreadPoolExecutor() as executor:
-        results = list(executor.map(lambda row: load_image_from_row(
-            row, directory_path), df.itertuples(index=False)))
+        results = list(executor.map(lambda row: load_image_from_row(row, directory_path), df.itertuples(index=False)))
 
     for img, label_index in results:
         images.append(img)
@@ -67,34 +62,41 @@ def load_images_from_csv(csv_path, directory_path):
 # Load the images and labels
 images, labels = load_images_from_csv(csv_path, directory_path)
 
-# Split data into training and testing
-x_train, x_test, y_train, y_test = train_test_split(
-    images, labels, test_size=0.2, random_state=42)
+# First split to separate out the training set
+x_train, x_temp, y_train, y_temp = train_test_split(images, labels, test_size=0.4, random_state=42)
 
-# Kollar så att det ser ut som vi förväntar oss, vilket det gör
+# Second split to separate out the validation and test sets
+x_val, x_test, y_val, y_test = train_test_split(x_temp, y_temp, test_size=0.5, random_state=42)
 
-print(x_train.shape)
-print(x_test.shape)
 
+##################################
+regularization_rate = None
+epoch_num = 2
+batch_size = 16
+##################################
 
 # Create model
 model = Sequential()
 model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(84, 84, 3)))
 model.add(MaxPooling2D((2, 2)))
-model.add(Dropout(0.25))  # Dropout added
+model.add(Dropout(0.25))
 
 model.add(Conv2D(64, (3, 3), activation='relu'))
 model.add(MaxPooling2D((2, 2)))
-model.add(Dropout(0.25))  # Dropout added
+model.add(Dropout(0.25))
 
 model.add(Conv2D(128, (3, 3), activation='relu'))
 model.add(MaxPooling2D((2, 2)))
-model.add(Dropout(0.25))  # Dropout added
+model.add(Dropout(0.25))
+
+model.add(Conv2D(256, (3, 3), activation='relu'))
+model.add(MaxPooling2D((2, 2)))
+model.add(Dropout(0.25))
 
 model.add(Flatten())
 model.add(Dense(128, activation='relu',
           kernel_regularizer=l2(regularization_rate)))
-model.add(Dropout(0.5))  # Dropout added
+model.add(Dropout(0.5))
 
 model.add(Dense(62, activation='softmax'))
 
@@ -104,7 +106,13 @@ model.compile(optimizer='adam', loss='categorical_crossentropy',
 
 # Train model
 history = model.fit(x_train, y_train, epochs=epoch_num,
-                    batch_size=batch_size, validation_data=(x_test, y_test))
+                    batch_size=batch_size, validation_data=(x_val, y_val))
+
+# Save model
+if not os.path.exists('models'):
+    os.makedirs('models')
+
+model.save('models/model.h5')
 
 # Save model, create dir if not exists
 if not os.path.exists('models'):
@@ -112,7 +120,6 @@ if not os.path.exists('models'):
 
 model.save('models/model.h5')
 
-# Plot accuracy and loss
 if not os.path.exists('./Plots/'):
     os.makedirs('./Plots/')
 
@@ -152,7 +159,6 @@ def int_to_label(i):
     else:
         return chr(i - 36 + ord('a'))
 
-
 # Get predictions
 predictions = model.predict(x_test)
 predicted_labels = np.argmax(predictions, axis=1)
@@ -168,8 +174,7 @@ plt.figure(figsize=(10, 10))
 for i, index in enumerate(random_indices):
     plt.subplot(3, 3, i + 1)
     plt.imshow(x_test[index])
-    plt.title(
-        f"Actual: {int_to_label(actual_labels[index])}\nPredicted: {int_to_label(predicted_labels[index])}")
+    plt.title(f"Actual: {int_to_label(actual_labels[index])}\nPredicted: {int_to_label(predicted_labels[index])}")
     plt.axis('off')
 
 plt.tight_layout()
