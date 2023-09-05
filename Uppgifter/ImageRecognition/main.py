@@ -81,7 +81,7 @@ class DataHandler:
 
 
 class ModelHandler:
-    def __init__(self, epochs, data_handler, timestamp, regularization_method=None, regularization_factor=None):
+    def __init__(self, epochs, data_handler, timestamp, regularization_method=None, regularization_factor=None, patiance=None):
         self.regularization_method = regularization_method
         self.regularization_factor = regularization_factor
         self.epochs = epochs
@@ -89,7 +89,7 @@ class ModelHandler:
         self.saved_model_path = f'./Models/CatDog_classifier.h5'
         self.model = None
         self.history = tf.keras.callbacks.History()
-        self.early_stopping = EarlyStopping(monitor='val_accuracy', patience=150)
+        self.early_stopping = EarlyStopping(monitor='val_accuracy', patience=patiance_value)
 
     def create_new_model(self):
         models_folder = './Models'
@@ -347,19 +347,20 @@ else:
 
 #############################################
 # Define constants and hyperparameters
-train_img_num = 4000
+train_img_num = 5000
 test_img_num = int(train_img_num * 0.2)
 batch_size = 16
-epochs = 30
+epochs = 100
 timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+patiance_value = 200
 #############################################
 
 data_handler = DataHandler(train_img_num, test_img_num, batch_size)
 # Load Training and Testing Data
 data_handler.load_training_and_test_data()
 
-model_handler = ModelHandler(epochs, data_handler, timestamp, regularization_method, regularization_factor)
-
+model_handler = ModelHandler(epochs, data_handler, timestamp, regularization_method, regularization_factor, patiance_value)
+print(f"Running model with early-stopping; Patiance value set to {patiance_value}")
 # Train Model
 model_handler.handle_model_training()
 
