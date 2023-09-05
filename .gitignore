@@ -83,3 +83,10 @@ Datasets/Animals-10/raw-img/cane/OIF-e2bexWrojgtQnAPPcUfOWQ.jpeg
 Datasets
 Uppgifter/EngCharClassifier/EngChars
 Uppgifter\transferLearning\data
+Uppgifter/EngCharClassifier/EngCharClassifier.ipynb
+Uppgifter/EngCharClassifier/EngChars/oc_testdata/1.png
+Uppgifter/EngCharClassifier/EngChars
+*.png
+*.jpg
+*.png
+Uppgifter/transferLearning/data.zip

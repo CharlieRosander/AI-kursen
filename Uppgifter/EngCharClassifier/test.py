@@ -7,10 +7,12 @@ from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
 from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.regularizers import l1, l2, l1_l2
+from concurrent.futures import ThreadPoolExecutor
 from sklearn.model_selection import train_test_split
 import pandas as pd
-from concurrent.futures import ThreadPoolExecutor
+
 
 #################### VARS ######################
 directory_path = "./EngChars/Img/"
@@ -26,7 +28,6 @@ def label_to_int(label):
     elif label.islower():
         return 36 + ord(label) - ord('a')
 
-
 def load_image_from_row(row, directory_path):
     img_path = os.path.join(directory_path, row.image[4:])
     label = row.label
@@ -38,7 +39,6 @@ def load_image_from_row(row, directory_path):
     label_index = label_to_int(label)
 
     return img, label_index
-
 
 def load_images_from_csv(csv_path, directory_path):
     images = []
@@ -58,9 +58,9 @@ def load_images_from_csv(csv_path, directory_path):
 
     return images, labels
 
-
 # Load the images and labels
 images, labels = load_images_from_csv(csv_path, directory_path)
+
 
 # First split to separate out the training set
 x_train, x_temp, y_train, y_temp = train_test_split(images, labels, test_size=0.4, random_state=42)
@@ -69,9 +69,10 @@ x_train, x_temp, y_train, y_temp = train_test_split(images, labels, test_size=0.
 x_val, x_test, y_val, y_test = train_test_split(x_temp, y_temp, test_size=0.5, random_state=42)
 
 
+
 ##################################
-regularization_rate = None
-epoch_num = 2
+regularization_rate = 0.01
+epoch_num = 60
 batch_size = 16
 ##################################
 
@@ -79,24 +80,20 @@ batch_size = 16
 model = Sequential()
 model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(84, 84, 3)))
 model.add(MaxPooling2D((2, 2)))
-model.add(Dropout(0.25))
 
 model.add(Conv2D(64, (3, 3), activation='relu'))
 model.add(MaxPooling2D((2, 2)))
-model.add(Dropout(0.25))
 
 model.add(Conv2D(128, (3, 3), activation='relu'))
 model.add(MaxPooling2D((2, 2)))
-model.add(Dropout(0.25))
 
 model.add(Conv2D(256, (3, 3), activation='relu'))
 model.add(MaxPooling2D((2, 2)))
-model.add(Dropout(0.25))
 
 model.add(Flatten())
 model.add(Dense(128, activation='relu',
           kernel_regularizer=l2(regularization_rate)))
-model.add(Dropout(0.5))
+model.add(Dropout(0.5))  # Dropout added
 
 model.add(Dense(62, activation='softmax'))
 
@@ -108,17 +105,16 @@ model.compile(optimizer='adam', loss='categorical_crossentropy',
 history = model.fit(x_train, y_train, epochs=epoch_num,
                     batch_size=batch_size, validation_data=(x_val, y_val))
 
-# Save model
-if not os.path.exists('models'):
-    os.makedirs('models')
-
-model.save('models/model.h5')
-
 # Save model, create dir if not exists
 if not os.path.exists('models'):
     os.makedirs('models')
 
 model.save('models/model.h5')
+
+# Test model
+test_loss, test_acc = model.evaluate(x_test, y_test, verbose=2)
+
+
 
 if not os.path.exists('./Plots/'):
     os.makedirs('./Plots/')
@@ -179,3 +175,63 @@ for i, index in enumerate(random_indices):
 
 plt.tight_layout()
 plt.show()
+
+### OWN TESTS ###
+
+# Specific row-loading function for own tests
+def load_own_test_image_from_row(row, directory_path):
+    img_path = os.path.join(directory_path, row.image.replace("oc_testdata/", ""))
+    label = row.label
+
+    img = cv2.imread(img_path)
+    img = cv2.resize(img, (84, 84))
+    img = img / 255.0  # normalize
+
+    label_index = label_to_int(label)
+
+    return img, label_index
+
+def load_own_test_images_from_csv(csv_path, directory_path):
+    images = []
+    labels = []
+
+    df = pd.read_csv(csv_path)
+
+    with ThreadPoolExecutor() as executor:
+        results = list(executor.map(lambda row: load_own_test_image_from_row(row, directory_path), df.itertuples(index=False)))
+
+    for img, label_index in results:
+        images.append(img)
+        labels.append(label_index)
+
+    images = np.array(images)
+    labels = to_categorical(np.array(labels))
+
+    return images, labels
+
+# Load your own test images and labels
+own_csv_path = "./EngChars/oc_testlabels.csv"  # specify the path to the CSV file for your own test data
+own_directory_path = "./EngChars/oc_testdata/"  # specify the folder containing your own test images
+
+own_test_images, own_test_labels = load_own_test_images_from_csv(own_csv_path, own_directory_path)
+
+# Get predictions on your own test images
+own_test_predictions = model.predict(own_test_images)
+predicted_labels = np.argmax(own_test_predictions, axis=1)
+actual_labels = np.argmax(own_test_labels, axis=1)
+
+# Choose random indices to visualize (here, since the dataset is small, we visualize all)
+own_random_indices = np.arange(own_test_images.shape[0])
+
+plt.figure(figsize=(10, 10))
+
+for i, index in enumerate(own_random_indices):
+    plt.subplot(3, 4, i + 1)  # Adjust subplot dimensions based on the number of your own test images
+    plt.imshow(own_test_images[index])
+    plt.title(f"Actual: {int_to_label(actual_labels[index])}\nPredicted: {int_to_label(predicted_labels[index])}")
+    plt.axis('off')
+
+plt.tight_layout()
+plt.show()
+
+
