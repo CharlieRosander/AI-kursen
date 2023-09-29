@@ -74,7 +74,7 @@ print(x_test.shape)
 
 ##################################
 regularization_rate = 0.003
-epoch_num = 50
+epoch_num = 10
 batch_size = 32
 ##################################
 
